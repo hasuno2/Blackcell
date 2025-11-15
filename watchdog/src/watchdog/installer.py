@@ -14,6 +14,30 @@ def _write_bashrc(content: str) -> None:
     config.BASHRC_PATH.write_text(content, encoding="utf-8")
 
 
+def _inject_snippet(content: str) -> str:
+    if not content:
+        return config.SNIPPET
+
+    lines = content.splitlines(keepends=True)
+    insert_at = len(lines)
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#"):
+            insert_at = idx
+            break
+
+    if lines and insert_at > 0 and not lines[insert_at - 1].endswith(("\n", "\r")):
+        lines.insert(insert_at, "\n")
+        insert_at += 1
+
+    lines.insert(insert_at, config.SNIPPET)
+
+    new_content = "".join(lines)
+    if not new_content.endswith("\n"):
+        new_content += "\n"
+    return new_content
+
+
 def install() -> None:
     """Create log directories and inject the watchdog snippet."""
     config.LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -24,14 +48,8 @@ def install() -> None:
         print("Watchdog snippet already present in ~/.bashrc.")
         return
 
-    addition = config.SNIPPET
-    if bashrc_content:
-        prefix = "" if bashrc_content.endswith("\n") else "\n"
-        addition = f"{prefix}{config.SNIPPET}"
-
-    with config.BASHRC_PATH.open("a", encoding="utf-8") as bashrc:
-        bashrc.write(addition)
-
+    updated = _inject_snippet(bashrc_content)
+    _write_bashrc(updated)
     print("Installed. Open a new terminal to start logging.")
 
 
