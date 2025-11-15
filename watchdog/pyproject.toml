@@ -1,0 +1,17 @@
+﻿[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "watchdog-cli"
+version = "0.1.0"
+description = "Simple bash session logger"
+readme = "README.md"
+authors = [{ name = "Watchdog" }]
+requires-python = ">=3.9"
+
+[project.scripts]
+watchdog = "watchdog.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
