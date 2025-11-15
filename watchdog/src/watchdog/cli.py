@@ -32,20 +32,20 @@ def main(argv: list[str] | None = None) -> None:
     parser = _build_parser()
     args = parser.parse_args(argv)
 
-    if args.command == "install":
-        installer.install()
-    elif args.command == "uninstall":
-        installer.uninstall()
-    elif args.command == "sessions":
-        sessions.list_sessions()
-    elif args.command == "show":
-        sessions.show_session(args.id)
-    elif args.command == "last":
-        sessions.show_last_session()
-    elif args.command == "search":
-        sessions.search_sessions(args.keyword)
-    elif args.command == "doctor":
-        doctor.run_checks()
+    commands = {
+        "install": installer.install,
+        "uninstall": installer.uninstall,
+        "sessions": sessions.list_sessions,
+        "show": lambda: sessions.show_session(args.id),
+        "last": sessions.show_last_session,
+        "search": lambda: sessions.search_sessions(args.keyword),
+        "doctor": doctor.run_checks,
+    }
+
+    handler = commands.get(args.command)
+    if handler is None:
+        parser.error(f"Unknown command: {args.command}")
+    handler()
 
 
 if __name__ == "__main__":  # pragma: no cover - manual invocation helper

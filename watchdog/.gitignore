@@ -12,6 +12,7 @@ __pycache__/
 
 # Logs
 *.log
+.watchdog/
 
 # Editor noise
 .idea/

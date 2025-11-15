@@ -69,27 +69,26 @@ def uninstall() -> None:
 
 
 def _remove_snippet(content: str) -> tuple[str, bool]:
-    lines = content.splitlines()
-    result: list[str] = []
-    removing = False
-    removed = False
+    lines = content.splitlines(keepends=True)
+    start_idx = end_idx = None
 
-    for line in lines:
-        if not removing and line.strip() == config.START_MARKER:
-            removing = True
-            removed = True
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if start_idx is None and stripped == config.START_MARKER:
+            start_idx = idx
             continue
-        if removing and line.strip() == config.END_MARKER:
-            removing = False
-            continue
-        if not removing:
-            result.append(line)
+        if start_idx is not None and stripped == config.END_MARKER:
+            end_idx = idx
+            break
 
-    if removing:
-        removed = True
+    if start_idx is None or end_idx is None:
+        cleaned = content
+        if cleaned and not cleaned.endswith("\n"):
+            cleaned += "\n"
+        return cleaned, False
 
-    cleaned = "\n".join(result)
+    del lines[start_idx : end_idx + 1]
+    cleaned = "".join(lines)
     if cleaned and not cleaned.endswith("\n"):
         cleaned += "\n"
-
-    return cleaned, removed
+    return cleaned, True

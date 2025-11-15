@@ -41,7 +41,7 @@ def _display_session(logs: list[Path], idx: int) -> None:
     print(f"Showing session {idx}: {_relative_name(session_file)}\n")
     with session_file.open("r", encoding="utf-8", errors="replace") as handle:
         for chunk in handle:
-            sys.stdout.write(chunk)
+            print(chunk, end="")
 
 
 def list_sessions() -> None:
@@ -107,7 +107,7 @@ def search_sessions(keyword: str) -> None:
             with path.open("r", encoding="utf-8", errors="replace") as handle:
                 for line in handle:
                     if keyword in line:
-                        sys.stdout.write(f"{_relative_name(path)}: {line}")
+                        print(f"{_relative_name(path)}: {line}", end="")
                         matches += 1
         except OSError as exc:
             print(f"Failed to read {_relative_name(path)}: {exc}")

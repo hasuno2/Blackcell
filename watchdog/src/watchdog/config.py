@@ -12,7 +12,7 @@ END_MARKER = "# <<< WATCHDOG END <<<"
 
 SNIPPET = (
     f"{START_MARKER}\n"
-    "if [ -t 1 ] && [ -z \"$WATCHDOG_ACTIVE\" ]; then\n"
+    "if [ -t 1 ] && [ -z \"$WATCHDOG_ACTIVE\" ] && [ \"${SHELL##*/}\" = \"bash\" ]; then\n"
     "    case \"$-\" in\n"
     "    *i*) ;;\n"
     "    *) return ;;\n"
