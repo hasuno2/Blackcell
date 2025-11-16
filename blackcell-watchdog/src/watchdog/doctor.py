@@ -22,29 +22,39 @@ def _check_log_dir() -> CheckResult:
 
 
 def _check_snippet_present() -> CheckResult:
-    if not config.BASHRC_PATH.exists():
+    shell = config.detect_shell()
+    if not shell:
         return CheckResult(
-            "Watchdog snippet present in ~/.bashrc",
+            "Watchdog snippet present for current shell",
             False,
-            "No ~/.bashrc file found.",
+            "Unsupported or undetected shell.",
+        )
+
+    rc_path = config.rc_path_for(shell)
+    if not rc_path.exists():
+        return CheckResult(
+            f"Watchdog snippet present in {rc_path}",
+            False,
+            f"No RC file at {rc_path}.",
         )
 
     try:
-        content = config.BASHRC_PATH.read_text(encoding="utf-8")
+        content = rc_path.read_text(encoding="utf-8")
     except OSError as exc:
-        return CheckResult("Watchdog snippet present in ~/.bashrc", False, f"Failed to read ~/.bashrc: {exc}")
+        return CheckResult(f"Watchdog snippet present in {rc_path}", False, f"Failed to read RC file: {exc}")
 
     present = config.START_MARKER in content and config.END_MARKER in content
     detail = "Markers detected." if present else "Markers missing."
-    return CheckResult("Watchdog snippet present in ~/.bashrc", present, detail)
+    return CheckResult(f"Watchdog snippet present in {rc_path}", present, detail)
 
 
 def _check_shell() -> CheckResult:
-    shell = os.environ.get("SHELL", "")
-    shell_name = shell.rsplit("/", 1)[-1] if shell else ""
-    is_bash = shell_name.startswith("bash")
-    detail = shell or "SHELL environment variable not set."
-    return CheckResult("Current shell reports as bash", is_bash, detail)
+    shell_env = os.environ.get("SHELL", "")
+    detected = config.detect_shell()
+    if detected:
+        return CheckResult("Supported shell detected", True, detected)
+    detail = shell_env or "SHELL environment variable not set."
+    return CheckResult("Supported shell detected (bash, zsh, fish)", False, detail)
 
 
 def _check_script_binary() -> CheckResult:
@@ -76,11 +86,38 @@ def _check_database() -> CheckResult:
     return CheckResult("SQLite database reachable", exists, detail)
 
 
+def _check_shell_hook() -> CheckResult:
+    shell = config.detect_shell()
+    if not shell:
+        return CheckResult("Shell hook configured", False, "Unsupported or undetected shell.")
+
+    rc_path = config.rc_path_for(shell)
+    if not rc_path.exists():
+        return CheckResult("Shell hook configured", False, f"{rc_path} not found.")
+
+    try:
+        content = rc_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return CheckResult("Shell hook configured", False, f"Failed to read {rc_path}: {exc}")
+
+    hook_markers = {
+        "bash": "WATCHDOG_PROMPT_COMMAND",
+        "zsh": "__watchdog_precmd",
+        "fish": "__watchdog_postexec",
+    }
+
+    marker = hook_markers.get(shell, "watchdog _realtime_log")
+    if marker in content:
+        return CheckResult("Shell hook configured", True, f"{marker} detected in {rc_path}")
+    return CheckResult("Shell hook configured", False, f"{marker} missing in {rc_path}")
+
+
 def run_checks() -> None:
     """Run the doctor checks and print a short report."""
     checks = [
         _check_log_dir(),
         _check_snippet_present(),
+        _check_shell_hook(),
         _check_shell(),
         _check_script_binary(),
         _check_latest_log(),

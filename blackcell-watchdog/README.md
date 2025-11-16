@@ -58,8 +58,9 @@ By default logs are stored under `~/.watchdog/logs/YYYY/MM/DD`. Two environment 
 - `WATCHDOG_LOG_ROOT` - override the root directory for logs (defaults to `$HOME/.watchdog/logs`).
 - `WATCHDOG_MAX_LOG_SIZE` - maximum log size (in bytes) before pruning kicks in (defaults to `5000000` or ~5 MB).
 - `WATCHDOG_SESSION` (auto-set) - unique identifier for the current shell session.
+- `WATCHDOG_SHELL` - override automatic shell detection (useful for installing snippets into bash/zsh/fish explicitly).
 
-Set these variables before launching your terminal emulator to affect new shells. All shells must be interactive bash sessions; non-interactive shells exit early to avoid recursion.
+Set these variables before launching your terminal emulator to affect new shells. All shells must be supported interactive shells (bash, zsh, or fish); non-interactive shells exit early to avoid recursion.
 
 ## Structured database
 
