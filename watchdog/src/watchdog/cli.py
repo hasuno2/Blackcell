@@ -18,6 +18,7 @@ def _build_parser() -> argparse.ArgumentParser:
     sub.add_parser("sessions", help="List recorded sessions.")
     sub.add_parser("last", help="Show the most recent session log.")
     sub.add_parser("doctor", help="Run installation health checks.")
+    sub.add_parser("tui", help="Launch the interactive Textual browser.")
 
     migrate_parser = sub.add_parser("migrate", help="Rebuild the SQLite database from raw logs.")
     migrate_parser.add_argument(
@@ -49,6 +50,11 @@ def main(argv: list[str] | None = None) -> None:
     parser = _build_parser()
     args = parser.parse_args(argv)
 
+    def _launch_tui() -> None:
+        from .tui import app as tui_app  # expensive import, keep local
+
+        tui_app.run()
+
     commands = {
         "install": installer.install,
         "uninstall": installer.uninstall,
@@ -57,6 +63,7 @@ def main(argv: list[str] | None = None) -> None:
         "last": sessions.show_last_session,
         "search": lambda: sessions.search_sessions(args.keyword),
         "doctor": doctor.run_checks,
+        "tui": _launch_tui,
         "migrate": lambda: migrate.migrate(reset=getattr(args, "reset", False)),
     }
 

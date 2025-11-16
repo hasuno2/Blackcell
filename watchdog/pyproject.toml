@@ -9,9 +9,13 @@ description = "Simple bash session logger"
 readme = "README.md"
 authors = [{ name = "Watchdog" }]
 requires-python = ">=3.9"
+dependencies = [
+    "textual>=0.42.0",
+]
 
 [project.scripts]
 watchdog = "watchdog.cli:main"
+watchdog-tui = "watchdog.tui.app:run"
 
 [tool.setuptools.packages.find]
 where = ["src"]

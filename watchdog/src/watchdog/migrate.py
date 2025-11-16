@@ -28,9 +28,11 @@ def _session_timestamp(session: str) -> str | None:
         return None
 
 
-def _parse_log(path: Path) -> Iterator[tuple[str | None, str, str, str]]:
+def _parse_log(path: Path) -> Iterator[tuple[str, str, str, str]]:
     session = _session_name(path)
     session_ts = _session_timestamp(session)
+    if session_ts is None:
+        session_ts = datetime.fromtimestamp(path.stat().st_mtime).isoformat(timespec="seconds")
     command: str | None = None
     output_lines: list[str] = []
 

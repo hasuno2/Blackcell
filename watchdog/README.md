@@ -36,10 +36,20 @@ watchdog last                # instantly show the most recent session
 watchdog search ssh          # grep across recorded sessions
 watchdog doctor              # verify the install looks healthy
 watchdog migrate --reset     # rebuild the SQLite index from raw logs
+watchdog tui                 # launch the interactive Textual browser
 watchdog uninstall           # remove the snippet
 ```
 
 Run `watchdog --help` for the full command list.
+
+### Textual TUI
+
+```bash
+cd watchdog
+python -m venv .venv && source .venv/bin/activate
+pip install -e .
+watchdog tui      # or run `watchdog-tui`
+```
 
 ## Configuration
 
@@ -68,7 +78,7 @@ Entries arrive in two ways:
 1. **Real-time capture** via `PROMPT_COMMAND`, which forwards each completed bash command to `watchdog _realtime_log ...`.
 2. **Bulk migration** of historical `.log` files. Use `watchdog migrate` (or `watchdog migrate --reset`) to rebuild the database from the text logs at any time.
 
-Treat the plain-text logs as the source of truth—you can always regenerate the SQLite index if it becomes stale.
+Treat the plain-text logs as the source of truth -- you can always regenerate the SQLite index if it becomes stale.
 
 ## How it works
 
@@ -76,7 +86,7 @@ Treat the plain-text logs as the source of truth—you can always regenerate the
 2. Interactive bash shells detect the snippet, set `WATCHDOG_ACTIVE=1`, and start `script -af` with a timestamp/TTY/shell-based log filename.
 3. On every prompt, `PROMPT_COMMAND` forwards the latest history entry to `watchdog _realtime_log ...`, feeding the SQLite index.
 4. Each day gets its own folder, ~5 MB+ logs are pruned automatically, and non-interactive shells return immediately so nested scripts stay quiet.
-5. When a terminal closes, the log remains on disk ready for `watchdog sessions`, `watchdog show <id>`, `watchdog last`, `watchdog search <keyword>`, or `watchdog migrate`.
+5. When a terminal closes, the log remains on disk ready for `watchdog sessions`, `watchdog show <id>`, `watchdog last`, `watchdog search <keyword>`, the Textual browser, or `watchdog migrate`.
 
 ## Development
 
@@ -91,3 +101,4 @@ Use `PYTHONPATH=src python -m watchdog.cli <cmd>` for ad-hoc runs without reinst
 ## License
 
 Watchdog is distributed under the MIT License (see the repository-level [LICENSE](../LICENSE)).
+
