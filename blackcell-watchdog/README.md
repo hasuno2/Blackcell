@@ -99,6 +99,17 @@ pip install -e .
 
 Use `PYTHONPATH=src python -m watchdog.cli <cmd>` for ad-hoc runs without reinstalling. Please keep docstrings and CLI help texts in sync with new functionality.
 
+## Building a Debian package
+
+A helper script assembles a `.deb` entirely on Windows/macOS/Linux without needing `dpkg`:
+
+```bash
+cd watchdog
+python scripts/build_deb.py
+```
+
+The script stages the filesystem under `dist/deb/blackcell-watchdog_<version>/` and produces `dist/deb/blackcell-watchdog_<version>_all.deb` containing `/usr/bin/watchdog`, `/usr/bin/watchdog-tui`, and the packaged Python modules.
+
 ## License
 
 Watchdog is distributed under the MIT License (see the repository-level [LICENSE](../LICENSE)).
