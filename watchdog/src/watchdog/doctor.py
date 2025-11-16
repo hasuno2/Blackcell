@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import os
 import shutil
 
-from . import config, sessions
+from . import config, db, sessions
 
 
 @dataclass
@@ -65,6 +65,17 @@ def _check_latest_log() -> CheckResult:
     return CheckResult("Recent log file exists", ok, detail)
 
 
+def _check_database() -> CheckResult:
+    try:
+        db.init_db()
+    except Exception as exc:  # pragma: no cover - defensive
+        return CheckResult("SQLite database reachable", False, f"Failed to init: {exc}")
+
+    exists = db.DB_PATH.exists()
+    detail = str(db.DB_PATH)
+    return CheckResult("SQLite database reachable", exists, detail)
+
+
 def run_checks() -> None:
     """Run the doctor checks and print a short report."""
     checks = [
@@ -73,6 +84,7 @@ def run_checks() -> None:
         _check_shell(),
         _check_script_binary(),
         _check_latest_log(),
+        _check_database(),
     ]
     total = len(checks)
     passed = 0

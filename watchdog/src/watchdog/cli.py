@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import argparse
 
-from . import doctor, installer, sessions
+from . import doctor, installer, migrate, runtime, sessions
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -19,6 +19,13 @@ def _build_parser() -> argparse.ArgumentParser:
     sub.add_parser("last", help="Show the most recent session log.")
     sub.add_parser("doctor", help="Run installation health checks.")
 
+    migrate_parser = sub.add_parser("migrate", help="Rebuild the SQLite database from raw logs.")
+    migrate_parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Drop and recreate the logs table before importing.",
+    )
+
     show_parser = sub.add_parser("show", help="Display a recorded session by id.")
     show_parser.add_argument("id", type=int, help="Numeric id shown in `watchdog sessions`.")
 
@@ -29,6 +36,16 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    import sys
+
+    if argv is None:
+        argv = sys.argv[1:]
+
+    if argv and argv[0] == "_realtime_log":
+        raw = argv[1] if len(argv) > 1 else ""
+        runtime.record_history_line(raw)
+        return
+
     parser = _build_parser()
     args = parser.parse_args(argv)
 
@@ -40,6 +57,7 @@ def main(argv: list[str] | None = None) -> None:
         "last": sessions.show_last_session,
         "search": lambda: sessions.search_sessions(args.keyword),
         "doctor": doctor.run_checks,
+        "migrate": lambda: migrate.migrate(reset=getattr(args, "reset", False)),
     }
 
     handler = commands.get(args.command)
